@@ -1,6 +1,6 @@
 import shutil
 import os
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from .ia.modelProvider import ModelProvider
 from PIL import Image
 import pandas as pd
@@ -20,13 +20,17 @@ df_taco = pd.read_csv('polls/assets/TACO_mini.csv', sep=';')
 @csrf_exempt
 def index(request):
     if request.method == 'POST':
-      img_raw = request.FILES['image']
-      img = Image.open(img_raw)
+      try:
+        img_raw = request.FILES['image'] if 'image' in request.FILES else None
+        validar_imagem(img_raw)
+        img = Image.open(img_raw)
 
-      ModelProvider.model(conf=0.5, source=img, save_txt=True)
-      response = retorna_macro()
-      shutil.rmtree('runs')
-      return JsonResponse({'lista_de_alimentos': response})
+        ModelProvider.model(conf=0.5, source=img, save_txt=True)
+        response = retorna_macro()
+        shutil.rmtree('runs')
+        return JsonResponse({'lista_de_alimentos': response})
+      except Exception as e:
+        return HttpResponseBadRequest(e)
 
 
 def retorna_macro():
@@ -42,3 +46,9 @@ def retorna_macro():
   for index, row in df_resultado_imagem_taco.iterrows():
     resultados.append({'nome_alimento': row.nome_alimento, 'calorias': row.calorias, 'gordura': row.gordura, 'proteina': row.proteina, 'carboidrato': row.carboidrato, 'contagem': row.contagem})
   return resultados
+
+def validar_imagem(img_raw):
+  if img_raw == None:
+    raise Exception('Imagem não inserida')
+  if img_raw.name.split('.')[-1] not in ['jpg', 'jpeg', 'png']:
+    raise Exception('Formato de imagem inválido')
