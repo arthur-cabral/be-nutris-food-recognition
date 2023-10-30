@@ -1,12 +1,11 @@
-from os import sep
-from django.http import HttpResponse, JsonResponse
+import shutil
+import os
+from django.http import JsonResponse
 from scipy.__config__ import show
 from .ia.modelProvider import ModelProvider
 from PIL import Image
-from ultralytics import YOLO
-import json
-import numpy as np
 import pandas as pd
+from django.views.decorators.csrf import csrf_exempt
 
 names = {
     0: 'Arroz',
@@ -19,18 +18,16 @@ names = {
 
 df_taco = pd.read_csv('polls/assets/TACO_mini.csv', sep=';')
 
+@csrf_exempt
 def index(request):
-    img = Image.open("C:/Users/TUCO/Desktop/BackendDjangoNutris/backendnutris/polls/assets/pf1.jpg")
+    if request.method == 'POST':
+      img_raw = request.FILES['image']
+      img = Image.open(img_raw)
 
-    # results = ModelProvider.model(conf=0.5, source=img, save_txt=True)
-    ModelProvider.model(conf=0.5, source=img, save_txt=True)
-
-    # result = results[0].boxes.cls.tolist()
-    # for i in range(len(result)):
-    #     result[i] = names[result[i]]
-
-    # return JsonResponse({'lista_de_alimentos': result})
-    return JsonResponse({'lista_de_alimentos': retorna_macro('pf1')})
+      ModelProvider.model(conf=0.5, source=img, save_txt=True)
+      response = retorna_macro()
+      shutil.rmtree('runs')
+      return JsonResponse({'lista_de_alimentos': response})
 
 
 def retorna_macro():
