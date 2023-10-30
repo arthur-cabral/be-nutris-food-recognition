@@ -1,7 +1,6 @@
 import shutil
 import os
 from django.http import JsonResponse
-from scipy.__config__ import show
 from .ia.modelProvider import ModelProvider
 from PIL import Image
 import pandas as pd
