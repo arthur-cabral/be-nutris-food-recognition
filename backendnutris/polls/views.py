@@ -17,7 +17,7 @@ names = {
     5: 'Salada'
 }
 
-df_taco = pd.read_csv('C:/Users/TUCO/Desktop/BackendDjangoNutris/backendnutris/polls/assets/TACO_mini.csv', sep=';')
+df_taco = pd.read_csv('polls/assets/TACO_mini.csv', sep=';')
 
 def index(request):
     img = Image.open("C:/Users/TUCO/Desktop/BackendDjangoNutris/backendnutris/polls/assets/pf1.jpg")
@@ -33,8 +33,10 @@ def index(request):
     return JsonResponse({'lista_de_alimentos': retorna_macro('pf1')})
 
 
-def retorna_macro(arquivo_label):
-  df_resultado_imagem = pd.read_csv('C:/Users/TUCO/Desktop/BackendDjangoNutris/backendnutris/runs/detect/predict/labels/{0}.txt'.format(arquivo_label), sep=' ', header = None)
+def retorna_macro():
+  if os.path.exists('runs/detect/predict/labels.txt') == False:
+    return []
+  df_resultado_imagem = pd.read_csv('runs/detect/predict/labels.txt', sep=' ', header = None)
   df_resultado_imagem.rename(columns={0:'id_alimento'},inplace=True)
   df_resultado_imagem['contagem'] = 1
   df_resultado_imagem = df_resultado_imagem.groupby('id_alimento').agg({'contagem':'sum'}).reset_index()
