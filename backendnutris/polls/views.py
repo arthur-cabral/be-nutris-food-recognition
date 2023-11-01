@@ -25,7 +25,7 @@ def index(request):
         validar_imagem(img_raw)
         img = Image.open(img_raw)
 
-        ModelProvider.model(conf=0.5, source=img, save_txt=True)
+        ModelProvider.model.predict(conf=0.5, source=img, save_txt=True, project='./runs/detect/')
         response = retorna_macro()
         shutil.rmtree('runs')
         return JsonResponse({'lista_de_alimentos': response})
@@ -35,7 +35,7 @@ def index(request):
 
 def retorna_macro():
   if os.path.exists('runs/detect/predict/labels.txt') == False:
-    return []
+    raise Exception('Erro ao criar a pasta de runs')
   df_resultado_imagem = pd.read_csv('runs/detect/predict/labels.txt', sep=' ', header = None)
   df_resultado_imagem.rename(columns={0:'id_alimento'},inplace=True)
   df_resultado_imagem['contagem'] = 1
